@@ -25,6 +25,12 @@ type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
+type CreateAppRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+}
+
 type CreateIssueRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`

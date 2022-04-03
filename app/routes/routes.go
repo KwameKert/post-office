@@ -13,6 +13,10 @@ type router struct {
 	services services.Services
 }
 
+const apiUrl string = "/api/v1"
+
+var serve services.Services
+
 func NewRouter(engine *gin.Engine, config *core.Config, services services.Services) *router {
 	return &router{
 		engine:   engine,
@@ -23,4 +27,5 @@ func NewRouter(engine *gin.Engine, config *core.Config, services services.Servic
 
 func (r *router) RegisterRoutes() {
 	RegisterUserRoutes(r.engine, r.services)
+	RegisterAppRoutes(r.engine, r.services)
 }
