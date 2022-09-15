@@ -17,6 +17,10 @@ func RegisterUserRoutes(e *gin.Engine, s services.Services) {
 
 	e.POST("/users", createUser)
 
+	e.GET("/users", fetchUsers)
+
+	e.GET("/users/:id", getUser)
+
 	// e.PUT("/users", func(c *gin.Context) {
 	// 	var req models.User
 
@@ -98,5 +102,31 @@ func createUser(c *gin.Context) {
 		return
 	}
 
+	c.JSON(response.Code, response.Meta)
+}
+
+func fetchUsers(c *gin.Context) {
+
+	response := serve.UserService.FetchUsers()
+
+	if response.Error {
+		c.JSON(response.Code, gin.H{
+			"message": response.Meta.Message,
+		})
+		return
+	}
+
+	c.JSON(response.Code, response.Meta)
+}
+
+func getUser(c *gin.Context) {
+	idStr := c.Param("id")
+	response := serve.UserService.GetUser(idStr)
+	if response.Error {
+		c.JSON(response.Code, gin.H{
+			"message": response.Meta.Message,
+		})
+		return
+	}
 	c.JSON(response.Code, response.Meta)
 }

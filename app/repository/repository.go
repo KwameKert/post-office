@@ -5,20 +5,16 @@ import (
 )
 
 type Repo struct {
-	Issues *issueLayer
-	Users  *userLayer
-	Apps   *appLayer
+	Users *userLayer
+	Apps  *appLayer
+	Logs  *logLayer
 }
 
 func NewRepository(db *mongo.Database) Repo {
 	return Repo{
-		Issues: newIssueRepoLayer(db),
-		Users:  newUserRepoLayer(db),
-		Apps:   newAppRepoLayer(db),
-		//	Tasks: newTaskRepoLayer(db),
-		// Transactions:      newTransactionLayer(db),
-		// Wallets:           newWalletLayer(db),
-		// TransactionEvents: newEventLayer(db),
+		Users: newUserRepoLayer(db),
+		Apps:  newAppRepoLayer(db),
+		Logs:  newLogRepoLayer(db),
 	}
 
 }

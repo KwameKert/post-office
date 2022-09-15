@@ -4,7 +4,9 @@ import (
 	//	"errors"
 	"postoffice/app/core"
 	"postoffice/app/models"
+	"postoffice/app/pkg"
 	"postoffice/app/repository"
+	"time"
 	//	"gorm.io/gorm"
 )
 
@@ -22,9 +24,11 @@ func newUserServiceLayer(r repository.Repo, c *core.Config) *userServiceLayer {
 
 func (u *userServiceLayer) CreateUser(req core.CreateUserRequest) core.Response {
 	user := models.User{
-		Email:       req.Email,
-		Action:      "Nice",
-		Description: req.Name,
+		Username:  req.Username,
+		Password:  pkg.HashPassword(req.Password),
+		Email:     req.Email,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	if err := u.repository.Users.Create(&user); err != nil {
 		return core.Error(err, nil)
@@ -32,35 +36,34 @@ func (u *userServiceLayer) CreateUser(req core.CreateUserRequest) core.Response 
 
 	return core.Success(&map[string]interface{}{
 		"user": user,
-	}, core.String("user logged successfully"))
+	}, core.String("user created successfully"))
 }
 
-// func (u *userServiceLayer) FetchUsers() core.Response {
-// 	var users []models.User
-// 	err := u.repository.Users.Fetch(&users)
-// 	if err != nil {
-// 		return core.Error(err, nil)
-// 	}
-// 	if len(users) < 1 {
-// 		return core.NoContentFound(err, core.String("No users found"))
-// 	}
-//
-// 	return core.Success(&map[string]interface{}{
-// 		"users": users,
-// 	}, core.String("users found successfully"))
-// }
+func (u *userServiceLayer) FetchUsers() core.Response {
+	err, users := u.repository.Users.Fetch()
+	if err != nil {
+		return core.Error(err, nil)
+	}
+	if len(users) == 0 {
+		return core.NoContentFound(err, core.String("No users found"))
+	}
 
-// func (u *userServiceLayer) GetUser(id int) core.Response {
-// 	user := models.User{}
+	return core.Success(&map[string]interface{}{
+		"users": users,
+	}, core.String("users found successfully"))
+}
 
-// 	if err := u.repository.Users.Get(&user, id); err != nil {
-// 		return core.BadRequest(err, nil)
-// 	}
+func (u *userServiceLayer) GetUser(id string) core.Response {
+	user := models.User{}
 
-// 	return core.Success(&map[string]interface{}{
-// 		"user": user,
-// 	}, core.String("users found successfully"))
-// }
+	if err := u.repository.Users.Get(&user, id); err != nil {
+		return core.BadRequest(err, nil)
+	}
+
+	return core.Success(&map[string]interface{}{
+		"user": user,
+	}, core.String("user found successfully"))
+}
 
 // func (u *userServiceLayer) DeleteUser(id int) core.Response {
 // 	user := models.User{}

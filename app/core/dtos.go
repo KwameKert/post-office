@@ -21,8 +21,9 @@ type Response struct {
 
 type CreateUserRequest struct {
 	Name     string `json:"name"`
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type CreateAppRequest struct {

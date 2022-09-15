@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
+	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.8.3
 )
@@ -24,6 +25,7 @@ require (
 )
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
@@ -36,7 +38,7 @@ require (
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/ugorji/go/codec v1.1.7 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

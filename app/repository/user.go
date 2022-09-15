@@ -4,8 +4,11 @@ import (
 	//	"errors"
 	cxt "context"
 	"postoffice/app/models"
+	"time"
 
 	// log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,20 +30,44 @@ func (ul *userLayer) Create(user *models.User) error {
 	return nil
 }
 
-func (ul *userLayer) Fetch(user *[]models.User) error {
+func (ul *userLayer) Update(user *models.User) error {
+	filter := bson.D{{"_id", user.Id}}
+	update := bson.D{{Key: "$set", Value: bson.D{
+		{"username", user.Username},
+		{"email", user.Email},
+		{"description", user.Description},
+		{"updated_at", time.Now()},
+	}}}
 
-	// if err := ul.db.Find(&user).Error; err != nil {
-	// 	log.Error("error -->", err)
-	// 	return err
-	// }
+	_, err := ul.collection.UpdateOne(cxt.TODO(), filter, update)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (ul *userLayer) Get(user *models.User, id int) error {
+func (ul *userLayer) Fetch() (error, []models.User) {
 
-	// if err := ul.db.Preload("Tasks").Find(&user, id).First(&user).Error; err != nil {
+	cursor, err := ul.collection.Find(cxt.TODO(), bson.D{})
+	if err != nil {
+		return err, nil
+	}
 
-	// 	return err
-	// }
+	var results []models.User
+
+	if err = cursor.All(cxt.TODO(), &results); err != nil {
+		panic(err)
+	}
+	return nil, results
+}
+
+func (ul *userLayer) Get(user *models.User, id string) error {
+	obId, _ := primitive.ObjectIDFromHex(id)
+
+	query := bson.M{"_id": obId}
+	if err := ul.collection.FindOne(cxt.TODO(), query).Decode(&user); err != nil {
+		return err
+	}
 	return nil
 }
