@@ -7,6 +7,8 @@ import (
 	"postoffice/app/pkg"
 	"postoffice/app/repository"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	//	"gorm.io/gorm"
 )
 
@@ -55,8 +57,13 @@ func (u *userServiceLayer) FetchUsers() core.Response {
 
 func (u *userServiceLayer) GetUser(id string) core.Response {
 	user := models.User{}
+	objectId, err := primitive.ObjectIDFromHex(id)
 
-	if err := u.repository.Users.Get(&user, id); err != nil {
+	if err != nil {
+		return core.Error(err, nil)
+	}
+
+	if err := u.repository.Users.Get(&user, objectId); err != nil {
 		return core.BadRequest(err, nil)
 	}
 
@@ -79,18 +86,17 @@ func (u *userServiceLayer) GetUser(id string) core.Response {
 // 	return core.Success(&map[string]interface{}{}, core.String("user deleted successfully"))
 // }
 
-// func (u *userServiceLayer) UpdateUser(user models.User) core.Response {
-// 	userDTO := models.User{}
+func (u *userServiceLayer) UpdateUser(user models.User) core.Response {
+	userDTO := models.User{}
 
-// 	if err := u.repository.Users.Get(&userDTO, user.Id); err != nil {
-// 		return core.BadRequest(err, nil)
-// 	}
-// 	userUpdated, err := u.repository.Users.Update(&user)
-// 	if err != nil {
-// 		return core.Error(err, nil)
-// 	}
+	if err := u.repository.Users.Get(&userDTO, user.Id); err != nil {
+		return core.BadRequest(err, nil)
+	}
+	if err := u.repository.Users.Update(&user); err != nil {
+		return core.Error(err, nil)
+	}
 
-// 	return core.Success(&map[string]interface{}{
-// 		"user": userUpdated,
-// 	}, core.String("users updated successfully"))
-// }
+	return core.Success(&map[string]interface{}{
+		"user": user,
+	}, core.String("users updated successfully"))
+}

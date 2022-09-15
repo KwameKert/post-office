@@ -62,10 +62,9 @@ func (ul *userLayer) Fetch() (error, []models.User) {
 	return nil, results
 }
 
-func (ul *userLayer) Get(user *models.User, id string) error {
-	obId, _ := primitive.ObjectIDFromHex(id)
+func (ul *userLayer) Get(user *models.User, id primitive.ObjectID) error {
 
-	query := bson.M{"_id": obId}
+	query := bson.M{"_id": id}
 	if err := ul.collection.FindOne(cxt.TODO(), query).Decode(&user); err != nil {
 		return err
 	}
