@@ -3,6 +3,7 @@ package routes
 import (
 	//	"postoffice/app/models"
 	"net/http"
+	"postoffice/app/middlewares"
 	"postoffice/app/models"
 	"postoffice/app/services"
 
@@ -16,75 +17,15 @@ import (
 
 func RegisterUserRoutes(e *gin.Engine, s services.Services) {
 
-	e.POST("/users", createUser)
+	e.POST(apiUrl+"/users", middlewares.AuthorizeClientRequest(), createUser)
 
-	e.GET("/users", fetchUsers)
+	e.GET(apiUrl+"/users", middlewares.AuthorizeClientRequest(), fetchUsers)
 
-	e.GET("/users/:id", getUser)
+	e.GET(apiUrl+"/users/:id", middlewares.AuthorizeClientRequest(), getUser)
 
-	e.PUT("/users", updateUser)
+	e.PUT(apiUrl+"/users", middlewares.AuthorizeClientRequest(), updateUser)
 
-	// e.PUT("/users", func(c *gin.Context) {
-	// 	var req models.User
-
-	// 	if err := c.ShouldBindJSON(&req); err != nil {
-	// 		c.JSON(http.StatusBadRequest, gin.H{
-	// 			"message": err.Error(),
-	// 		})
-	// 		return
-	// 	}
-	// 	response := s.UserService.UpdateUser(req)
-
-	// 	if response.Error {
-	// 		c.JSON(response.Code, gin.H{
-	// 			"message": response.Meta.Message,
-	// 		})
-	// 		return
-	// 	}
-
-	// 	c.JSON(response.Code, response.Meta)
-	// })
-
-	// e.GET("/users", func(c *gin.Context) {
-
-	// 	response := s.UserService.FetchUsers()
-
-	// 	if response.Error {
-	// 		c.JSON(response.Code, gin.H{
-	// 			"message": response.Meta.Message,
-	// 		})
-	// 		return
-	// 	}
-
-	// 	c.JSON(response.Code, response.Meta)
-	// })
-
-	// e.GET("/users/:id", func(c *gin.Context) {
-	// 	idStr := c.Param("id")
-	// 	id, _ := strconv.Atoi(idStr)
-	// 	response := s.UserService.GetUser(id)
-	// 	if response.Error {
-	// 		c.JSON(response.Code, gin.H{
-	// 			"message": response.Meta.Message,
-	// 		})
-	// 		return
-	// 	}
-	// 	c.JSON(response.Code, response.Meta)
-	// })
-
-	// e.DELETE("/users/:id", func(c *gin.Context) {
-	// 	idStr := c.Param("id")
-	// 	id, _ := strconv.Atoi(idStr)
-	// 	response := s.UserService.DeleteUser(id)
-	// 	if response.Error {
-	// 		c.JSON(response.Code, gin.H{
-	// 			"message": response.Meta.Message,
-	// 		})
-	// 		return
-	// 	}
-	// 	c.JSON(response.Code, response.Meta)
-	// })
-
+	e.POST(apiUrl+"/users/auth", loginUser)
 }
 
 func createUser(c *gin.Context) {
@@ -144,6 +85,27 @@ func updateUser(c *gin.Context) {
 		return
 	}
 	response := serve.UserService.UpdateUser(req)
+
+	if response.Error {
+		c.JSON(response.Code, gin.H{
+			"message": response.Meta.Message,
+		})
+		return
+	}
+
+	c.JSON(response.Code, response.Meta)
+}
+
+func loginUser(c *gin.Context) {
+	var req core.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	response := serve.UserService.Login(req)
 
 	if response.Error {
 		c.JSON(response.Code, gin.H{

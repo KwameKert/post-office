@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func AuthorizeClientRequest() gin.HandlerFunc {
@@ -71,7 +72,7 @@ func ExtractTokenMetadata(token *jwt.Token) map[string]interface{} {
 	return nil
 }
 
-func CreateToken(userId int) (string, error) {
+func CreateToken(userId primitive.ObjectID) (string, error) {
 	var err error
 	//Creating Access Token
 	log.Info("generating jwt token ")

@@ -2,11 +2,12 @@ package services
 
 import (
 	//	"errors"
+
 	"postoffice/app/core"
 	"postoffice/app/models"
 	"postoffice/app/repository"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	//	"gorm.io/gorm"
 )
 
@@ -28,7 +29,6 @@ func (a *appServiceLayer) CreateApp(req core.CreateAppRequest) core.Response {
 		Description: req.Description,
 		Status:      req.Status,
 	}
-	println("Im here")
 	if err := a.repository.Apps.Create(&app); err != nil {
 		return core.Error(err, nil)
 	}
@@ -40,7 +40,7 @@ func (a *appServiceLayer) CreateApp(req core.CreateAppRequest) core.Response {
 
 func (a *appServiceLayer) FetchApps() core.Response {
 
-	var apps []bson.M
+	var apps []models.App
 
 	err := a.repository.Apps.Fetch(&apps)
 	if err != nil {
@@ -53,4 +53,50 @@ func (a *appServiceLayer) FetchApps() core.Response {
 	return core.Success(&map[string]interface{}{
 		"apps": apps,
 	}, core.String("apps found successfully"))
+}
+
+func (a *appServiceLayer) GetApp(id string) core.Response {
+	app := models.App{}
+	objectId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return core.Error(err, nil)
+	}
+
+	if err := a.repository.Apps.Get(&app, objectId); err != nil {
+		return core.BadRequest(err, nil)
+	}
+
+	var modules []models.Module
+
+	a.repository.Modules.FetchByAppID(&modules, objectId)
+	app.Modules = modules
+	return core.Success(&map[string]interface{}{
+		"app": app,
+	}, core.String("app found successfully"))
+}
+
+func (a *appServiceLayer) UpdateApp(req core.UpdateAppRequest) core.Response {
+	app := models.App{}
+	objectId, err := primitive.ObjectIDFromHex(req.Id)
+
+	if err != nil {
+		return core.Error(err, nil)
+	}
+
+	if err := a.repository.Apps.Get(&app, objectId); err != nil {
+		return core.BadRequest(err, core.String("App does not exist"))
+	}
+
+	app.Name = req.Name
+	app.Status = req.Status
+	app.Description = req.Description
+
+	if err := a.repository.Apps.Update(&app); err != nil {
+		return core.Error(err, nil)
+	}
+
+	return core.Success(&map[string]interface{}{
+		"app": app,
+	}, core.String("app updated successfully"))
 }

@@ -28,4 +28,6 @@ func NewRouter(engine *gin.Engine, config *core.Config, services services.Servic
 func (r *router) RegisterRoutes() {
 	RegisterUserRoutes(r.engine, r.services)
 	RegisterAppRoutes(r.engine, r.services)
+	RegisterModuleRoutes(r.engine, r.services)
+	RegisterDomainRoutes(r.engine, r.services)
 }

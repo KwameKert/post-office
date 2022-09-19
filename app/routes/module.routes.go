@@ -9,16 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAppRoutes(e *gin.Engine, s services.Services) {
+func RegisterModuleRoutes(e *gin.Engine, s services.Services) {
 	serve = s
-	e.POST(apiUrl+"/apps", middlewares.AuthorizeClientRequest(), createApp)
-	e.GET(apiUrl+"/apps", middlewares.AuthorizeClientRequest(), fetchApps)
-	e.GET(apiUrl+"/apps/:id", middlewares.AuthorizeClientRequest(), GetAppById)
-	e.PUT(apiUrl+"/apps", middlewares.AuthorizeClientRequest(), updateApp)
+	e.POST(apiUrl+"/modules", middlewares.AuthorizeClientRequest(), createModule)
+	e.GET(apiUrl+"/modules", middlewares.AuthorizeClientRequest(), fetchModules)
+	e.GET(apiUrl+"/modules/:id", middlewares.AuthorizeClientRequest(), getModules)
+	e.PUT(apiUrl+"/modules", middlewares.AuthorizeClientRequest(), updateModule)
 }
 
-func createApp(c *gin.Context) {
-	var req core.CreateAppRequest
+func createModule(c *gin.Context) {
+	var req core.CreateModuleRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -26,7 +26,7 @@ func createApp(c *gin.Context) {
 		})
 		return
 	}
-	response := serve.AppService.CreateApp(req)
+	response := serve.ModuleService.CreateModule(req)
 
 	if response.Error {
 		c.JSON(response.Code, gin.H{
@@ -38,8 +38,8 @@ func createApp(c *gin.Context) {
 	c.JSON(response.Code, response.Meta)
 }
 
-func updateApp(c *gin.Context) {
-	var req core.UpdateAppRequest
+func updateModule(c *gin.Context) {
+	var req core.UpdateModuleRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -47,7 +47,7 @@ func updateApp(c *gin.Context) {
 		})
 		return
 	}
-	response := serve.AppService.UpdateApp(req)
+	response := serve.ModuleService.UpdateModule(req)
 
 	if response.Error {
 		c.JSON(response.Code, gin.H{
@@ -59,9 +59,9 @@ func updateApp(c *gin.Context) {
 	c.JSON(response.Code, response.Meta)
 }
 
-func fetchApps(c *gin.Context) {
+func fetchModules(c *gin.Context) {
 
-	response := serve.AppService.FetchApps()
+	response := serve.ModuleService.FetchModules()
 	if response.Error {
 		c.JSON(response.Code, gin.H{
 			"message": response.Meta.Message,
@@ -72,9 +72,10 @@ func fetchApps(c *gin.Context) {
 	c.JSON(response.Code, response.Meta)
 }
 
-func GetAppById(c *gin.Context) {
+func getModules(c *gin.Context) {
+
 	idStr := c.Param("id")
-	response := serve.AppService.GetApp(idStr)
+	response := serve.ModuleService.GetModule(idStr)
 	if response.Error {
 		c.JSON(response.Code, gin.H{
 			"message": response.Meta.Message,

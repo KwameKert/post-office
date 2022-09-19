@@ -23,6 +23,7 @@ func newUserRepoLayer(db *mongo.Database) *userLayer {
 }
 
 func (ul *userLayer) Create(user *models.User) error {
+	user.CreatedAt = time.Now()
 	_, err := ul.collection.InsertOne(cxt.TODO(), &user)
 	if err != nil {
 		return err
@@ -65,6 +66,14 @@ func (ul *userLayer) Fetch() (error, []models.User) {
 func (ul *userLayer) Get(user *models.User, id primitive.ObjectID) error {
 
 	query := bson.M{"_id": id}
+	if err := ul.collection.FindOne(cxt.TODO(), query).Decode(&user); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ul *userLayer) GetByUsername(user *models.User, username string) error {
+	query := bson.M{"username": username}
 	if err := ul.collection.FindOne(cxt.TODO(), query).Decode(&user); err != nil {
 		return err
 	}
