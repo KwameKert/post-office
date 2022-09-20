@@ -5,6 +5,7 @@ import (
 
 	"postoffice/app/core"
 	"postoffice/app/models"
+	"postoffice/app/pkg"
 	"postoffice/app/repository"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -28,6 +29,7 @@ func (a *appServiceLayer) CreateApp(req core.CreateAppRequest) core.Response {
 		Name:        req.Name,
 		Description: req.Description,
 		Status:      req.Status,
+		ApiKey:      pkg.GenerateApiKey(),
 	}
 	if err := a.repository.Apps.Create(&app); err != nil {
 		return core.Error(err, nil)

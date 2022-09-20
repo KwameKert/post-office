@@ -39,7 +39,7 @@ func (dl *domainLayer) Update(domain *models.Domain) error {
 		{"name", domain.Name},
 		{"description", domain.Description},
 		{"status", domain.Status},
-		{"module_id", domain.ModuleId},
+		{"module", domain.Module},
 		{"updated_at", time.Now()},
 	}}}
 
@@ -51,20 +51,62 @@ func (dl *domainLayer) Update(domain *models.Domain) error {
 	return nil
 }
 
-func (dl *domainLayer) Get(domain *models.Domain, id primitive.ObjectID) error {
+func (dl *domainLayer) Get(domain *bson.M, id primitive.ObjectID) error {
 
-	query := bson.M{"_id": id}
-	if err := dl.collection.FindOne(cxt.TODO(), query).Decode(&domain); err != nil {
-		return err
+	//query := bson.M{"_id": id}
+	lookupStage := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "Modules"},
+			{Key: "localField", Value: "module_id"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "module"},
+		}}}
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: id}}}}
+
+	showInfoCursor, err := dl.collection.Aggregate(cxt.TODO(), mongo.Pipeline{matchStage, lookupStage})
+	if err != nil {
+		panic(err)
+	}
+
+	for showInfoCursor.Next(cxt.TODO()) {
+		if err := showInfoCursor.Decode(&domain); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if err := showInfoCursor.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
+func (dl *domainLayer) FetchByModuleID(domains *[]models.Domain, id primitive.ObjectID) error {
+
+	cursor, err := dl.collection.Find(context.TODO(), bson.M{"module_id": id})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = cursor.All(context.TODO(), domains); err != nil {
+		log.Fatal(err)
 	}
 	return nil
 }
 
 func (dl *domainLayer) Fetch(domains *[]models.Domain) error {
+	// lookupStage := bson.D{
+	// 	{Key: "$lookup", Value: bson.D{
+	// 		{Key: "from", Value: "Modules"},
+	// 		{Key: "localField", Value: "module_id"},
+	// 		{Key: "foreignField", Value: "_id"},
+	// 		{Key: "as", Value: "modules"},
+	// 	}}}
 
-	cursor, err := dl.collection.Find(context.TODO(), bson.D{{}})
+	//cursor, err := dl.collection.Aggregate(cxt.TODO(), mongo.Pipeline{lookupStage})
+
+	cursor, err := dl.collection.Find(cxt.TODO(), bson.D{})
+
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	if err = cursor.All(context.TODO(), domains); err != nil {

@@ -6,6 +6,7 @@ import (
 	"postoffice/app/models"
 	"postoffice/app/repository"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	//	"gorm.io/gorm"
 )
@@ -29,11 +30,17 @@ func (m *moduleServiceLayer) CreateModule(req core.CreateModuleRequest) core.Res
 		return core.Error(err, nil)
 	}
 
+	//fetch app by Id
+	var app *models.App
+	if err := m.repository.Apps.Get(app, appId); err != nil {
+		return core.Error(err, nil)
+	}
+
 	module := models.Module{
 		Name:        req.Name,
 		Description: req.Description,
 		Status:      req.Status,
-		AppID:       appId,
+		App:         appId,
 	}
 	if err := m.repository.Modules.Create(&module); err != nil {
 		return core.Error(err, nil)
@@ -45,7 +52,7 @@ func (m *moduleServiceLayer) CreateModule(req core.CreateModuleRequest) core.Res
 }
 
 func (m *moduleServiceLayer) GetModule(id string) core.Response {
-	module := models.Module{}
+	module := bson.M{}
 	objectId, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
@@ -56,20 +63,23 @@ func (m *moduleServiceLayer) GetModule(id string) core.Response {
 		return core.BadRequest(err, nil)
 	}
 
+	moduleResponse := formatModuleResponse(&module)
+
 	return core.Success(&map[string]interface{}{
-		"module": module,
+		"module": moduleResponse,
 	}, core.String("domain found successfully"))
 }
 
 func (m *moduleServiceLayer) UpdateModule(req core.UpdateModuleRequest) core.Response {
 	module := models.Module{}
-	objectId, err := primitive.ObjectIDFromHex(req.Id)
+	moduleId, err := primitive.ObjectIDFromHex(req.Id)
 
 	if err != nil {
 		return core.Error(err, nil)
 	}
 
-	if err := m.repository.Modules.Get(&module, objectId); err != nil {
+	moduleFound := bson.M{}
+	if err := m.repository.Modules.Get(&moduleFound, moduleId); err != nil {
 		return core.BadRequest(err, core.String("Module does not exist"))
 	}
 
@@ -78,10 +88,16 @@ func (m *moduleServiceLayer) UpdateModule(req core.UpdateModuleRequest) core.Res
 	if err != nil {
 		return core.Error(err, nil)
 	}
+
+	var app *models.App
+	if err := m.repository.Apps.Get(app, appId); err != nil {
+		return core.Error(err, nil)
+	}
+	module.Id = moduleId
 	module.Name = req.Name
 	module.Status = req.Status
 	module.Description = req.Description
-	module.AppID = appId
+	module.App = appId
 
 	if err := m.repository.Modules.Update(&module); err != nil {
 		return core.Error(err, nil)
@@ -107,4 +123,19 @@ func (m *moduleServiceLayer) FetchModules() core.Response {
 	return core.Success(&map[string]interface{}{
 		"modules": modules,
 	}, core.String("modules found successfully"))
+}
+
+func formatModuleResponse(moduleBson *bson.M) core.ModuleResponse {
+	moduleDecoded := core.TempModule{}
+	bsonBytes, _ := bson.Marshal(moduleBson)
+	bson.Unmarshal(bsonBytes, &moduleDecoded)
+	module := core.ModuleResponse{}
+	module.CreatedAt = moduleDecoded.CreatedAt
+	module.UpdatedAt = moduleDecoded.UpdatedAt
+	module.Name = moduleDecoded.Name
+	module.Description = moduleDecoded.Description
+	module.Status = moduleDecoded.Status
+	module.App = moduleDecoded.App[0]
+
+	return module
 }

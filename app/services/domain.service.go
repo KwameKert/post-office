@@ -6,6 +6,7 @@ import (
 	"postoffice/app/models"
 	"postoffice/app/repository"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	//	"gorm.io/gorm"
 )
@@ -29,11 +30,13 @@ func (a *domainServiceLayer) CreateDomain(req core.CreateDomainRequest) core.Res
 		return core.Error(err, nil)
 	}
 
+	//add app to domain
+
 	domain := models.Domain{
 		Name:        req.Name,
 		Description: req.Description,
 		Status:      req.Status,
-		ModuleId:    moduleId,
+		Module:      moduleId,
 	}
 	if err := a.repository.Domains.Create(&domain); err != nil {
 		return core.Error(err, nil)
@@ -45,7 +48,7 @@ func (a *domainServiceLayer) CreateDomain(req core.CreateDomainRequest) core.Res
 }
 
 func (d *domainServiceLayer) GetDomain(id string) core.Response {
-	domain := models.Domain{}
+	domain := bson.M{}
 	objectId, err := primitive.ObjectIDFromHex(id)
 
 	if err != nil {
@@ -68,17 +71,20 @@ func (d *domainServiceLayer) UpdateDomain(req core.UpdateDomainRequest) core.Res
 	if err != nil {
 		return core.Error(err, nil)
 	}
-
-	if err := d.repository.Domains.Get(&domain, domainId); err != nil {
+	domainFound := bson.M{}
+	if err := d.repository.Domains.Get(&domainFound, domainId); err != nil {
 		return core.BadRequest(err, core.String("Domain does not exist"))
 	}
 
+	//add app to domain
+
 	moduleId, err := primitive.ObjectIDFromHex(req.ModuleId)
 
+	domain.Id = domainId
 	domain.Name = req.Name
 	domain.Status = req.Status
 	domain.Description = req.Description
-	domain.ModuleId = moduleId
+	domain.Module = moduleId
 
 	if err := d.repository.Domains.Update(&domain); err != nil {
 		return core.Error(err, nil)

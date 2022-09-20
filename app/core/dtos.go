@@ -1,6 +1,8 @@
 package core
 
-import "time"
+import (
+	"time"
+)
 
 type Pagination struct {
 	CurrentPage  int   `json:"current_page,omitempty"`
@@ -35,7 +37,7 @@ type CreateAppRequest struct {
 }
 
 type UpdateAppRequest struct {
-	Id          string `json:"id"`
+	Id          string `json:"id" bson:"_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
@@ -61,6 +63,26 @@ type CreateModuleRequest struct {
 	Description string `json:"description"`
 	Status      string `json:"status"`
 	AppId       string `json:"app_id"`
+}
+
+type TempModule struct {
+	Id          string             `bson:"_id"`
+	App         []UpdateAppRequest `bson:"app"`
+	Name        string             `bson:"name"`
+	Description string             `bson:"description"`
+	Status      string             `bson:"status"`
+	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
+}
+
+type ModuleResponse struct {
+	Id          string           `json:"id"`
+	App         UpdateAppRequest `json:"app"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Status      string           `json:"status"`
+	CreatedAt   time.Time        `json:"created_at"`
+	UpdatedAt   time.Time        `json:"updated_at"`
 }
 
 type UpdateModuleRequest struct {
