@@ -57,13 +57,15 @@ func (dl *domainLayer) Get(domain *bson.M, id primitive.ObjectID) error {
 	lookupStage := bson.D{
 		{Key: "$lookup", Value: bson.D{
 			{Key: "from", Value: "Modules"},
-			{Key: "localField", Value: "module_id"},
+			{Key: "localField", Value: "module"},
 			{Key: "foreignField", Value: "_id"},
 			{Key: "as", Value: "module"},
-		}}}
+		}},
+	}
+	unwind := bson.D{{Key: "$unwind", Value: "$module"}}
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: id}}}}
 
-	showInfoCursor, err := dl.collection.Aggregate(cxt.TODO(), mongo.Pipeline{matchStage, lookupStage})
+	showInfoCursor, err := dl.collection.Aggregate(cxt.TODO(), mongo.Pipeline{matchStage, lookupStage, unwind})
 	if err != nil {
 		panic(err)
 	}

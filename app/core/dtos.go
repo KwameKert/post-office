@@ -85,6 +85,26 @@ type ModuleResponse struct {
 	UpdatedAt   time.Time        `json:"updated_at"`
 }
 
+type DomainResponse struct {
+	Id          string              `json:"id"`
+	Module      UpdateModuleRequest `json:"module"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Status      string              `json:"status"`
+	CreatedAt   time.Time           `json:"created_at"`
+	UpdatedAt   time.Time           `json:"updated_at"`
+}
+
+type TempDomain struct {
+	Id          string                `bson:"_id"`
+	Module      []UpdateModuleRequest `bson:"module"`
+	Name        string                `bson:"name"`
+	Description string                `bson:"description"`
+	Status      string                `bson:"status"`
+	CreatedAt   time.Time             `bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time             `bson:"updated_at" json:"updated_at"`
+}
+
 type UpdateModuleRequest struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
@@ -94,11 +114,10 @@ type UpdateModuleRequest struct {
 }
 
 type CreateLogRequest struct {
-	AppId    string `json:"app_id"`
 	Data     string `json:"data"`
-	DomainId string `bson:"domain_id"`
-	Action   string `bson:"action"`
-	Creator  string `bson:"user_id"`
+	DomainId string `json:"domain_id"`
+	Action   string `json:"action"`
+	UserId   string `json:"user_id"`
 }
 
 type CreateIssueRequest struct {

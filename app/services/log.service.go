@@ -16,8 +16,8 @@ type logServiceLayer struct {
 	config     *core.Config
 }
 
-func newLogServiceLayer(r repository.Repo, c *core.Config) *appServiceLayer {
-	return &appServiceLayer{
+func newLogServiceLayer(r repository.Repo, c *core.Config) *logServiceLayer {
+	return &logServiceLayer{
 		repository: r,
 		config:     c,
 	}
@@ -41,7 +41,7 @@ func (a *logServiceLayer) CreateLog(req core.CreateLogRequest) core.Response {
 		Domain: domainId,
 		//ModuleId: ,
 		Action:  req.Action,
-		Creator: req.Creator,
+		Creator: req.UserId,
 	}
 	if err := a.repository.Logs.Create(&log); err != nil {
 		return core.Error(err, nil)
@@ -50,4 +50,15 @@ func (a *logServiceLayer) CreateLog(req core.CreateLogRequest) core.Response {
 	return core.Success(&map[string]interface{}{
 		"log": log,
 	}, core.String("log created successfully"))
+}
+
+func (a *logServiceLayer) SearchLog() core.Response {
+	logs := []bson.M{}
+	if err := a.repository.Logs.Search(&logs); err != nil {
+		return core.BadRequest(err, core.String("No logs"))
+	}
+
+	return core.Success(&map[string]interface{}{
+		"logs": logs,
+	}, core.String("logs found successfully"))
 }

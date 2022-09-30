@@ -59,6 +59,8 @@ func (d *domainServiceLayer) GetDomain(id string) core.Response {
 		return core.BadRequest(err, nil)
 	}
 
+	//domainResponse := formatDomainResponse(&domain)
+
 	return core.Success(&map[string]interface{}{
 		"domain": domain,
 	}, core.String("domain found successfully"))
@@ -79,6 +81,10 @@ func (d *domainServiceLayer) UpdateDomain(req core.UpdateDomainRequest) core.Res
 	//add app to domain
 
 	moduleId, err := primitive.ObjectIDFromHex(req.ModuleId)
+
+	if err != nil {
+		return core.Error(err, nil)
+	}
 
 	domain.Id = domainId
 	domain.Name = req.Name
@@ -110,4 +116,19 @@ func (a *domainServiceLayer) FetchDomains() core.Response {
 	return core.Success(&map[string]interface{}{
 		"domains": domains,
 	}, core.String("domains found successfully"))
+}
+
+func formatDomainResponse(domainBson *bson.M) core.DomainResponse {
+	domainDecoded := core.TempDomain{}
+	bsonBytes, _ := bson.Marshal(domainBson)
+	bson.Unmarshal(bsonBytes, &domainDecoded)
+	domain := core.DomainResponse{}
+	domain.CreatedAt = domainDecoded.CreatedAt
+	domain.UpdatedAt = domainDecoded.UpdatedAt
+	domain.Name = domainDecoded.Name
+	domain.Description = domainDecoded.Description
+	domain.Status = domainDecoded.Status
+	domain.Module = domainDecoded.Module[0]
+
+	return domain
 }

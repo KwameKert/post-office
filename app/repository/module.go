@@ -97,7 +97,6 @@ func (ml *moduleLayer) Update(module *models.Module) error {
 
 func (ml *moduleLayer) Get(module *bson.M, id primitive.ObjectID) error {
 
-	//query := bson.M{"_id": id}
 	lookupStage := bson.D{
 		{Key: "$lookup", Value: bson.D{
 			{Key: "from", Value: "Apps"},
@@ -120,9 +119,5 @@ func (ml *moduleLayer) Get(module *bson.M, id primitive.ObjectID) error {
 	if err := showInfoCursor.Err(); err != nil {
 		log.Fatal(err)
 	}
-	// query := bson.M{"_id": id}
-	// if err := ml.collection.FindOne(cxt.TODO(), query).Decode(&module); err != nil {
-	// 	return err
-	// }
 	return nil
 }

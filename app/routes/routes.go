@@ -30,4 +30,5 @@ func (r *router) RegisterRoutes() {
 	RegisterAppRoutes(r.engine, r.services)
 	RegisterModuleRoutes(r.engine, r.services)
 	RegisterDomainRoutes(r.engine, r.services)
+	RegisterLogRoutes(r.engine, r.services)
 }

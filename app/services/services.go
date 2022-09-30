@@ -10,6 +10,7 @@ type Services struct {
 	AppService    *appServiceLayer
 	DomainService *domainServiceLayer
 	ModuleService *moduleServiceLayer
+	LogService    *logServiceLayer
 }
 
 func NewService(r repository.Repo, c *core.Config) Services {
@@ -18,5 +19,6 @@ func NewService(r repository.Repo, c *core.Config) Services {
 		AppService:    newAppServiceLayer(r, c),
 		DomainService: newDomainServiceLayer(r, c),
 		ModuleService: newModuleServiceLayer(r, c),
+		LogService:    newLogServiceLayer(r, c),
 	}
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	//	"errors"
+	"fmt"
 	"postoffice/app/core"
 	"postoffice/app/models"
 	"postoffice/app/repository"
@@ -63,10 +64,15 @@ func (m *moduleServiceLayer) GetModule(id string) core.Response {
 		return core.BadRequest(err, nil)
 	}
 
-	moduleResponse := formatModuleResponse(&module)
+	if module == nil || len(module) == 0 {
+		return core.BadRequest(err, core.String("No module found"))
+	}
+	fmt.Println(module)
+
+	//moduleResponse := formatModuleResponse(&module)
 
 	return core.Success(&map[string]interface{}{
-		"module": moduleResponse,
+		"module": module,
 	}, core.String("domain found successfully"))
 }
 
