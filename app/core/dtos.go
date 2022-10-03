@@ -152,3 +152,11 @@ type SchemaLoginResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Token     string    `json:"token"`
 }
+
+type SearchRequest struct {
+	Text     string `json:"text"`
+	DomainId string `json:"domain_id"`
+	AppId    string `json:"app_id"`
+	ModuleId string `json:"module_id"`
+	UserId   string `json:"user_id"`
+}

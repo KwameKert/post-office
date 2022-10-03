@@ -24,6 +24,7 @@ func newUserRepoLayer(db *mongo.Database) *userLayer {
 
 func (ul *userLayer) Create(user *models.User) error {
 	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 	_, err := ul.collection.InsertOne(cxt.TODO(), &user)
 	if err != nil {
 		return err

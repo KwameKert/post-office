@@ -25,6 +25,7 @@ func newDomainRepoLayer(db *mongo.Database) *domainLayer {
 
 func (dl *domainLayer) Create(domain *models.Domain) error {
 	domain.CreatedAt = time.Now()
+	domain.UpdatedAt = time.Now()
 	_, err := dl.collection.InsertOne(cxt.TODO(), &domain)
 	if err != nil {
 		log.Error(err)
@@ -34,13 +35,13 @@ func (dl *domainLayer) Create(domain *models.Domain) error {
 }
 
 func (dl *domainLayer) Update(domain *models.Domain) error {
-	filter := bson.D{{"_id", domain.Id}}
+	filter := bson.D{{Key: "_id", Value: domain.Id}}
 	update := bson.D{{Key: "$set", Value: bson.D{
-		{"name", domain.Name},
-		{"description", domain.Description},
-		{"status", domain.Status},
-		{"module", domain.Module},
-		{"updated_at", time.Now()},
+		{Key: "name", Value: domain.Name},
+		{Key: "description", Value: domain.Description},
+		{Key: "status", Value: domain.Status},
+		{Key: "module", Value: domain.Module},
+		{Key: "updated_at", Value: time.Now()},
 	}}}
 
 	_, err := dl.collection.UpdateOne(cxt.TODO(), filter, update)

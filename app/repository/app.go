@@ -25,6 +25,7 @@ func newAppRepoLayer(db *mongo.Database) *appLayer {
 
 func (al *appLayer) Create(app *models.App) error {
 	app.CreatedAt = time.Now()
+	app.UpdatedAt = time.Now()
 	_, err := al.collection.InsertOne(cxt.TODO(), &app)
 	if err != nil {
 		return err

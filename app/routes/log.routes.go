@@ -11,7 +11,7 @@ import (
 func RegisterLogRoutes(e *gin.Engine, s services.Services) {
 	serve = s
 	e.POST(apiUrl+"/logs", createLog)
-	e.GET(apiUrl+"/logs", searchLogs)
+	e.GET(apiUrl+"/logs/search", searchLogs)
 }
 
 func createLog(c *gin.Context) {
@@ -35,8 +35,14 @@ func createLog(c *gin.Context) {
 }
 
 func searchLogs(c *gin.Context) {
+	var queryData core.SearchRequest
+	queryData.AppId = c.Query("appId")
+	queryData.DomainId = c.Query("domainId")
+	queryData.Text = c.Query("text")
+	queryData.ModuleId = c.Query("moduleId")
+	queryData.UserId = c.Query("userId")
 
-	response := serve.LogService.SearchLog()
+	response := serve.LogService.SearchLog(queryData)
 
 	if response.Error {
 		c.JSON(response.Code, gin.H{

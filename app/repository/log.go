@@ -20,6 +20,15 @@ func newLogRepoLayer(db *mongo.Database) *logLayer {
 	}
 }
 
+func (al *logLayer) AddIndex(data *bson.D) {
+	model := mongo.IndexModel{Keys: &data}
+	_, err := al.collection.Indexes().CreateOne(cxt.TODO(), model)
+	if err != nil {
+		panic(err)
+	}
+
+}
+
 func (al *logLayer) Create(log *models.Log) error {
 	log.CreatedAt = time.Now()
 	log.UpdatedAt = time.Now()
@@ -30,9 +39,15 @@ func (al *logLayer) Create(log *models.Log) error {
 	return nil
 }
 
-func (dl *logLayer) Search(logs *[]bson.M) error {
+func (dl *logLayer) Search(logs *[]bson.M, query bson.D) error {
 
-	//query := bson.M{"_id": id}
+	// matchStage := bson.D{{
+	// 	"$match", bson.D{{"$and", []bson.D{
+	// 		bson.D{{"action", "INSERT"}},
+	// 		bson.D{{"user_id", "632309ac267f3818b3ad5071"}},
+	// 	}}}},
+	// }
+
 	pipelines := mongo.Pipeline{
 		{
 			{Key: "$lookup", Value: bson.D{
@@ -52,6 +67,7 @@ func (dl *logLayer) Search(logs *[]bson.M) error {
 			}},
 		},
 		{{Key: "$unwind", Value: "$module"}},
+		query,
 	}
 
 	// lookupStage := bson.D{
