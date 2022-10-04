@@ -1,15 +1,13 @@
 package services
 
 import (
-	//	"errors"
-
 	"postoffice/app/core"
 	"postoffice/app/models"
 	"postoffice/app/pkg"
 	"postoffice/app/repository"
 
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	//	"gorm.io/gorm"
 )
 
 type appServiceLayer struct {
@@ -66,6 +64,7 @@ func (a *appServiceLayer) GetApp(id string) core.Response {
 	}
 
 	if err := a.repository.Apps.Get(&app, objectId); err != nil {
+		log.Info("No app found for id %s", id)
 		return core.BadRequest(err, nil)
 	}
 
@@ -87,6 +86,7 @@ func (a *appServiceLayer) UpdateApp(req core.UpdateAppRequest) core.Response {
 	}
 
 	if err := a.repository.Apps.Get(&app, objectId); err != nil {
+		log.Info("No app found for id %s", req.Id)
 		return core.BadRequest(err, core.String("App does not exist"))
 	}
 

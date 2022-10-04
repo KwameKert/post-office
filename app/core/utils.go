@@ -1,7 +1,8 @@
 package core
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
+
 	"net/http"
 )
 
@@ -17,7 +18,7 @@ func StringValue(v *string) string {
 }
 
 func Error(err error, m *string) Response {
-	log.Println(err)
+	log.Error(err)
 
 	var message string
 	if m == nil {

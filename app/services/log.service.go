@@ -69,10 +69,7 @@ func (a *logServiceLayer) searchQueryBuilder(data *core.SearchRequest) bson.D {
 
 	var queryArr []bson.D
 
-	if data.AppId != "" {
-		appId, _ := primitive.ObjectIDFromHex(data.AppId)
-		queryArr = append(queryArr, bson.D{{Key: "app._id", Value: appId}})
-	}
+	queryArr = append(queryArr, bson.D{{"action", data.Action}})
 
 	if data.DomainId != "" {
 		domainId, _ := primitive.ObjectIDFromHex(data.DomainId)
@@ -87,7 +84,6 @@ func (a *logServiceLayer) searchQueryBuilder(data *core.SearchRequest) bson.D {
 
 	if data.UserId != "" {
 		queryArr = append(queryArr, bson.D{{Key: "user_id", Value: data.UserId}})
-
 	}
 	// if data.Text != "" {
 	// 	indexField := bson.D{{Key: "data", Value: "text"}}

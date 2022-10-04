@@ -6,6 +6,8 @@ import (
 	// "strconv"
 	//	"gorm.io/gorm"
 
+	"os"
+
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"postoffice/app/core"
@@ -27,6 +29,15 @@ func init() {
 	loadEnvironmentVariables()
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetReportCaller(true)
+	log.Info("=========================================")
+	log.Info("Starting Post Office API server")
+	log.Info("=========================================")
+	file, err := os.OpenFile("logFile.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	} else {
+		log.Info("Failed to log to file, using default stderr")
+	}
 }
 
 func loadEnvironmentVariables() {
@@ -37,7 +48,7 @@ func loadEnvironmentVariables() {
 }
 
 func (app *App) Start(conf *core.Config) {
-	log.Info("Starting Post Office server")
+
 	connection := setupDatabase(conf)
 	repo := repository.NewRepository(connection.Database("agerp-post-office"))
 	services := services.NewService(repo, conf)
@@ -47,7 +58,6 @@ func (app *App) Start(conf *core.Config) {
 
 	router.RegisterRoutes()
 	server.Start()
-
 }
 
 func setupDatabase(conf *core.Config) *mongo.Client {

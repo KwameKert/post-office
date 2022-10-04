@@ -37,6 +37,7 @@ func createLog(c *gin.Context) {
 func searchLogs(c *gin.Context) {
 	var queryData core.SearchRequest
 	queryData.AppId = c.Query("appId")
+	queryData.Action = c.Query("action")
 	queryData.DomainId = c.Query("domainId")
 	queryData.Text = c.Query("text")
 	queryData.ModuleId = c.Query("moduleId")

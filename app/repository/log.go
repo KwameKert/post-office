@@ -67,7 +67,17 @@ func (dl *logLayer) Search(logs *[]bson.M, query bson.D) error {
 			}},
 		},
 		{{Key: "$unwind", Value: "$module"}},
+
 		query,
+		{{
+			"$setWindowFields", bson.D{{
+				"output", bson.D{{
+					"totalCount", bson.D{{"$count", bson.D{}}},
+				}},
+			}},
+		}},
+		{{"$skip", 0}},
+		{{"$limit", 10}},
 	}
 
 	// lookupStage := bson.D{

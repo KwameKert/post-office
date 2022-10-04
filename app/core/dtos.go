@@ -159,4 +159,5 @@ type SearchRequest struct {
 	AppId    string `json:"app_id"`
 	ModuleId string `json:"module_id"`
 	UserId   string `json:"user_id"`
+	Action   string `json:"action"`
 }
