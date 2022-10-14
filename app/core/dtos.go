@@ -154,6 +154,8 @@ type SchemaLoginResponse struct {
 }
 
 type SearchRequest struct {
+	Page     int    `json:"page"`
+	Size     int    `json:"size"`
 	Text     string `json:"text"`
 	DomainId string `json:"domain_id"`
 	AppId    string `json:"app_id"`

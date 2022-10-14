@@ -2,7 +2,11 @@ package repository
 
 import (
 	//	"errors"
+	//	"context"
 	cxt "context"
+
+	log "github.com/sirupsen/logrus"
+
 	"postoffice/app/models"
 	"time"
 
@@ -21,12 +25,12 @@ func newLogRepoLayer(db *mongo.Database) *logLayer {
 }
 
 func (al *logLayer) AddIndex(data *bson.D) {
-	model := mongo.IndexModel{Keys: &data}
-	_, err := al.collection.Indexes().CreateOne(cxt.TODO(), model)
+	model := mongo.IndexModel{Keys: bson.D{{"data", "text"}}}
+	name, err := al.collection.Indexes().CreateOne(cxt.TODO(), model)
 	if err != nil {
 		panic(err)
 	}
-
+	log.Info("name is here {}", name)
 }
 
 func (al *logLayer) Create(log *models.Log) error {
@@ -39,16 +43,10 @@ func (al *logLayer) Create(log *models.Log) error {
 	return nil
 }
 
-func (dl *logLayer) Search(logs *[]bson.M, query bson.D) error {
-
-	// matchStage := bson.D{{
-	// 	"$match", bson.D{{"$and", []bson.D{
-	// 		bson.D{{"action", "INSERT"}},
-	// 		bson.D{{"user_id", "632309ac267f3818b3ad5071"}},
-	// 	}}}},
-	// }
+func (dl *logLayer) Search(logs *[]bson.M, query bson.D, limit int, skip int) error {
 
 	pipelines := mongo.Pipeline{
+
 		{
 			{Key: "$lookup", Value: bson.D{
 				{Key: "from", Value: "Domains"},
@@ -67,41 +65,25 @@ func (dl *logLayer) Search(logs *[]bson.M, query bson.D) error {
 			}},
 		},
 		{{Key: "$unwind", Value: "$module"}},
-
 		query,
 		{{
-			"$setWindowFields", bson.D{{
-				"output", bson.D{{
-					"totalCount", bson.D{{"$count", bson.D{}}},
+			Key: "$setWindowFields", Value: bson.D{{
+				Key: "output", Value: bson.D{{
+					Key: "totalCount", Value: bson.D{{"$count", bson.D{}}},
 				}},
 			}},
 		}},
-		{{"$skip", 0}},
-		{{"$limit", 10}},
+		{{Key: "$skip", Value: skip}},
+		{{Key: "$limit", Value: limit}},
 	}
-
-	// lookupStage := bson.D{
-	// 	{Key: "$lookup", Value: bson.D{
-	// 		{Key: "from", Value: "Domains"},
-	// 		{Key: "localField", Value: "domain"},
-	// 		{Key: "foreignField", Value: "_id"},
-	// 		{Key: "as", Value: "domain"},
-	// 	}}}
-
-	// lookupStage2 := bson.D{{Key: "$lookup", Value: bson.D{
-	// 	{Key: "from", Value: "Module"},
-	// 	{Key: "localField", Value: "module"},
-	// 	{Key: "foreignField", Value: "_id"},
-	// 	{Key: "as", Value: "module"},
-	// }}}
 
 	showInfoCursor, err := dl.collection.Aggregate(cxt.TODO(), pipelines)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	if err := showInfoCursor.All(cxt.TODO(), logs); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	return nil

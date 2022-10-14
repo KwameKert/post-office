@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"postoffice/app/core"
 	"postoffice/app/services"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,6 +43,8 @@ func searchLogs(c *gin.Context) {
 	queryData.Text = c.Query("text")
 	queryData.ModuleId = c.Query("moduleId")
 	queryData.UserId = c.Query("userId")
+	queryData.Page, _ = strconv.Atoi(c.Query("page"))
+	queryData.Size, _ = strconv.Atoi(c.Query("size"))
 
 	response := serve.LogService.SearchLog(queryData)
 

@@ -37,9 +37,8 @@ func (a *logServiceLayer) CreateLog(req core.CreateLogRequest) core.Response {
 	}
 
 	log := models.Log{
-		Data:   req.Data,
-		Domain: domainId,
-		//ModuleId: ,
+		Data:    req.Data,
+		Domain:  domainId,
 		Action:  req.Action,
 		Creator: req.UserId,
 	}
@@ -54,9 +53,15 @@ func (a *logServiceLayer) CreateLog(req core.CreateLogRequest) core.Response {
 
 func (a *logServiceLayer) SearchLog(data core.SearchRequest) core.Response {
 	logs := []bson.M{}
+	skip := data.Size * data.Page
+	limit := data.Size
+
+	if limit == 0 {
+		limit = 10
+	}
 
 	query := a.searchQueryBuilder(&data)
-	if err := a.repository.Logs.Search(&logs, query); err != nil {
+	if err := a.repository.Logs.Search(&logs, query, limit, skip); err != nil {
 		return core.BadRequest(err, core.String("No logs"))
 	}
 
@@ -68,12 +73,13 @@ func (a *logServiceLayer) SearchLog(data core.SearchRequest) core.Response {
 func (a *logServiceLayer) searchQueryBuilder(data *core.SearchRequest) bson.D {
 
 	var queryArr []bson.D
-
-	queryArr = append(queryArr, bson.D{{"action", data.Action}})
-
 	if data.DomainId != "" {
 		domainId, _ := primitive.ObjectIDFromHex(data.DomainId)
 		queryArr = append(queryArr, bson.D{{Key: "domain._id", Value: domainId}})
+	}
+
+	if data.Action != "" {
+		queryArr = append(queryArr, bson.D{{"action", data.Action}})
 	}
 
 	if data.ModuleId != "" {
@@ -85,16 +91,15 @@ func (a *logServiceLayer) searchQueryBuilder(data *core.SearchRequest) bson.D {
 	if data.UserId != "" {
 		queryArr = append(queryArr, bson.D{{Key: "user_id", Value: data.UserId}})
 	}
-	// if data.Text != "" {
-	// 	indexField := bson.D{{Key: "data", Value: "text"}}
-	// 	a.repository.Logs.AddIndex(&indexField)
+	if data.Text != "" {
+		indexField := bson.D{{Key: "data", Value: "text"}}
+		a.repository.Logs.AddIndex(&indexField)
 
-	// 	queryData = append(queryData, bson.E{Key: "$text",
-	// 		Value: bson.D{{Key: "$search", Value: data.Text}}})
-	// }
-	// array := []bson.D{}
-	// array = append(array, bson.D{{"user_id", "632309ac267f3818b3ad5071"}})
-	// array = append(array, bson.D{{"action", "INSERT"}})
+		queryArr = append(queryArr, bson.D{{Key: "data", Value: bson.D{{
+			Key: "$regex", Value: data.Text,
+		}}}})
+
+	}
 
 	matchStage := bson.D{{
 		"$match", bson.D{{"$and", queryArr}}},
